@@ -1,3 +1,4 @@
 # py-package-pytoolz
 
-Useful classes, methods, and functions designed to streamline the development process.
+PyToolz is a package houseing useful classes, methods, and functions designed 
+to streamline the development process.
