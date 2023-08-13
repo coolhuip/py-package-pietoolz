@@ -28,7 +28,7 @@ def date_today(fmt='full_date') -> str:
     23:35:06
     >>> print(date_today('dat_boi_aint_right'))
     🚩----------------------------DEVTOOLS ERROR-----------------------------🚩
-         <fmt> must be assigned 'curr_date', 'curr_time', or leave blank.z
+         <fmt> must be assigned 'curr_date', 'curr_time', or leave blank.
     🚩-----------------------------------------------------------------------🚩
     """
     now = datetime.now()
@@ -51,7 +51,7 @@ Time: %H:%M:%S\n\
 
 
 if __name__ == '__main__':
-    # ONLY FOR TESTING PURPOSES
-    print(date_today(f'invalid_arg1'))
     import doctest
     doctest.testmod()
+
+    print(date_today(f'invalid_arg1'))
