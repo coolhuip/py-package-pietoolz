@@ -55,13 +55,13 @@ class Coord:
         'Coord: (1, 2)'
         >>> p2 = str(Coord(75, 300, 'test'))
         >>> p2
-        'Coord: (75, 300) <-- test'
+        'Coord: (75, 300)  <--  test'
         >>> print(p2)
-        Coord: (75, 300) <-- test
+        Coord: (75, 300)  <--  test
         """
         if self._name is None:
             return f'Coord: ({self.x}, {self.y})'
-        return f'Coord: ({self.x}, {self.y}) <-- {self._name}'
+        return f'Coord: ({self.x}, {self.y})  <--  {self._name}'
 
 
     def __eq__(self, other: Coord) -> bool:
@@ -88,244 +88,161 @@ class Coord:
         >>> p1 == p3
         False
         """
-        pass
+        return (self.x == other.x) and (self.y == other.y)
 
 
-    # def __ne__(self, other: object) -> bool:
-    #     """
-    #     Return True if the coordinates are not equal, False otherwise.
+    def __ne__(self, other: Coord) -> bool:
+        """
+        Return True if the coordinates are not equal, False otherwise.
         
-    #     Parameters
-    #     ----------
-    #     other : object
-    #         The object to compare to.
+        Parameters
+        ----------
+        other : object
+            The object to compare to.
 
-    #     Returns
-    #     -------
-    #     bool
-    #         True if the coordinates are not equal, False otherwise.
+        Returns
+        -------
+        bool
+            True if the coordinates are not equal, False otherwise.
 
-    #     Examples
-    #     --------
-    #     >>> p1 = Coord(1, 2)
-    #     >>> p2 = Coord(1, 2)
-    #     >>> p3 = Coord(1, 3)
-    #     >>> p1 != p2
-    #     False
-    #     >>> p1 != p3
-    #     True
-    #     """
-    #     pass
+        Examples
+        --------
+        >>> p1 = Coord(1, 2)
+        >>> p2 = Coord(1, 2)
+        >>> p3 = Coord(1, 3)
+        >>> p1 != p2
+        False
+        >>> p1 != p3
+        True
+        """
+        return (self.x != other.x) or (self.y != other.y)
 
 
-    # def __lt__(self, other: object) -> bool:
-    #     """
-    #     Return True if the coordinates are less than, False otherwise.
+    def __add__(self, other: Coord, name: Optional[str]=None) -> 'Coord':
+        """
+        Return a new Coord object with the coordinates sum.
+
+        Parameters
+        ----------
+        other : Coord
+
+        Returns
+        -------
+        Coord
+            A new Coord object.
+
+        Representation Invariants
+        -------------------------
+        - This method does NOT change <self>.
+
+        Examples
+        --------
+        >>> p1 = Coord(1, 2)
+        >>> p2 = Coord(3, 4)
+        >>> p3 = p1 + p2
+        >>> str(p3)
+        'Coord: (4, 6)  <--  [None+None]'
+        >>> p3
+        Coord: (4, 6)  <--  [None+None]
         
-    #     Parameters
-    #     ----------
-    #     other : object
-    #         The object to compare to.
+        # TODO: FINISH WRITING DOCTESTS
 
-    #     Returns
-    #     -------
-    #     bool
-    #         True if the coordinates are less than, False otherwise.
-
-    #     Examples
-    #     --------
-    #     >>> p1 = Coord(1, 2)
-    #     >>> p2 = Coord(1, 2)
-    #     >>> p3 = Coord(1, 3)
-    #     >>> p1 < p2
-    #     False
-    #     >>> p1 < p3
-    #     True
-    #     """
-    #     pass
+        """
+        sum_x, sum_y = self.x + other.x, self.y + other.y
+        new = f'[{self._name}+{other._name}]' if name is None else name
+        return Coord(sum_x, sum_y, new)
+        # sum_x = self.x + other.x
+        # sum_y = self.y + other.y
+        # if name is None:
+        #     new_name = f'[{self._name}+{other._name}]'
+        #     return Coord(sum_x, sum_y, new_name)
+        # return Coord(sum_x, sum_y, name)
 
 
-    # def __le__(self, other: object) -> bool:
-    #     """
-    #     Return True if the coordinates are less than or equal, False otherwise.
+    def __sub__(self, other: Coord, name: Optional[str]=None) -> 'Coord':
+        """
+        Return a new coordinate object with the coordinates subtracted.
         
-    #     Parameters
-    #     ----------
-    #     other : object
-    #         The object to compare to.
+        Parameters
+        ----------
+        other : object
+            The object to subtract from.
 
-    #     Returns
-    #     -------
-    #     bool
-    #         True if the coordinates are less than or equal, False otherwise.
+        Returns
+        -------
+        Coord
+            The new coordinate object.
 
-    #     Examples
-    #     --------
-    #     >>> p1 = Coord(1, 2)
-    #     >>> p2 = Coord(1, 2)
-    #     >>> p3 = Coord(1, 3)
-    #     >>> p1 <= p2
-    #     True
-    #     >>> p1 <= p3
-    #     True
-    #     """
-    #     pass
+        Examples
+        --------
+        >>> p1 = Coord(1, 2)
+        >>> p2 = Coord(3, 4)
+        >>> p3 = p2 - p1
+        >>> p3
+        Coord: (2, 2)  <--  [None-None]
+
+        # TODO: FINISH WRITING DOCTESTS
+        """
+        new_x, new_y = self.x - other.x, self.y - other.y
+        new = f'[{self._name}-{other._name}]' if name is None else name
+        return Coord(new_x, new_y, new)
 
 
-    # def __gt__(self, other: object) -> bool:
-    #     """
-    #     Return True if the coordinates are greater than, False otherwise.
+    def __getitem__(self, key: int) -> Union[int, float]:
+        """
+        Return the coordinate at the specified index.
         
-    #     Parameters
-    #     ----------
-    #     other : object
-    #         The object to compare to.
+        Parameters
+        ----------
+        key : int
+            The index of the coordinate to return.
 
-    #     Returns
-    #     -------
-    #     bool
-    #         True if the coordinates are greater than, False otherwise.
+        Returns
+        -------
+        int, float
+            The coordinate at the specified index.
 
-    #     Examples
-    #     --------
-    #     >>> p1 = Coord(1, 2)
-    #     >>> p2 = Coord(1, 2)
-    #     >>> p3 = Coord(1, 3)
-    #     >>> p1 > p2
-    #     False
-    #     >>> p1 > p3
-    #     False
-    #     """
-    #     pass
+        Examples
+        --------
+        >>> p1 = Coord(1, 2)
+        >>> p1[0]
+        1
+        >>> p1[1]
+        2
+        """
+        if key not in [0, 1]:
+            raise IndexError('You must index 0 or 1, for x and y, respectively.')
+        return self.y if key else self.x
 
 
-    # def __ge__(self, other: object) -> bool:
-    #     """
-    #     Return True if the coordinates are greater than or equal, False otherwise.
+    def __setitem__(self, key: int, value: Union[int, float]) -> None:
+        """
+        Set the coordinate at the specified index to the specified value.
         
-    #     Parameters
-    #     ----------
-    #     other : object
-    #         The object to compare to.
+        Parameters
+        ----------
+        key : int
+            The index of the coordinate to set.
+        value : int, float
+            The value to set the coordinate to.
 
-    #     Returns
-    #     -------
-    #     bool
-    #         True if the coordinates are greater than or equal, False otherwise.
-
-    #     Examples
-    #     --------
-    #     >>> p1 = Coord(1, 2)
-    #     >>> p2 = Coord(1, 2)
-    #     >>> p3 = Coord(1, 3)
-    #     >>> p1 >= p2
-    #     True
-    #     >>> p1 >= p3
-    #     False
-    #     """
-    #     pass
-
-
-    # def __add__(self, other: object) -> 'Coord':
-    #     """
-    #     Return a new coordinate object with the coordinates added together.
+        Examples
+        --------
+        >>> p1 = Coord(1, 2)
+        >>> p1[0] = 3
+        >>> p1
+        Coord: (3, 2)
+        >>> p1[1] = 4
+        >>> p1
+        Coord: (3, 4)
+        """
+        if key not in [0, 1]:
+            raise IndexError('You must index 0 or 1, for x and y, respectively.')
+        if key:
+            self.y = value
+        else:
+            self.x = value
         
-    #     Parameters
-    #     ----------
-    #     other : object
-    #         The object to add to.
-
-    #     Returns
-    #     -------
-    #     Coord
-    #         The new coordinate object.
-
-    #     Examples
-    #     --------
-    #     >>> p1 = Coord(1, 2)
-    #     >>> p2 = Coord(3, 4)
-    #     >>> p3 = p1 + p2
-    #     >>> p3
-    #     Coord: (4, 6)
-    #     """
-    #     pass
-
-
-    # def __sub__(self, other: object) -> 'Coord':
-    #     """
-    #     Return a new coordinate object with the coordinates subtracted.
-        
-    #     Parameters
-    #     ----------
-    #     other : object
-    #         The object to subtract from.
-
-    #     Returns
-    #     -------
-    #     Coord
-    #         The new coordinate object.
-
-    #     Examples
-    #     --------
-    #     >>> p1 = Coord(1, 2)
-    #     >>> p2 = Coord(3, 4)
-    #     >>> p3 = p2 - p1
-    #     >>> p3
-    #     Coord: (2, 2)
-    #     """
-    #     pass
-
-
-    # def __getitem__(self, key: int) -> Union[int, float]:
-    #     """
-    #     Return the coordinate at the specified index.
-        
-    #     Parameters
-    #     ----------
-    #     key : int
-    #         The index of the coordinate to return.
-
-    #     Returns
-    #     -------
-    #     int, float
-    #         The coordinate at the specified index.
-
-    #     Examples
-    #     --------
-    #     >>> p1 = Coord(1, 2)
-    #     >>> p1[0]
-    #     1
-    #     >>> p1[1]
-    #     2
-    #     """
-    #     pass
-
-
-    # def __setitem__(self, key: int, value: Union[int, float]) -> None:
-    #     """
-    #     Set the coordinate at the specified index to the specified value.
-        
-    #     Parameters
-    #     ----------
-    #     key : int
-    #         The index of the coordinate to set.
-    #     value : int, float
-    #         The value to set the coordinate to.
-
-    #     Examples
-    #     --------
-    #     >>> p1 = Coord(1, 2)
-    #     >>> p1[0] = 3
-    #     >>> p1
-    #     Coord: (3, 2)
-    #     >>> p1[1] = 4
-    #     >>> p1
-    #     Coord: (3, 4)
-    #     """
-    #     pass
-
-
-
 
 if __name__ == "__main__":
     import doctest
