@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Any, Optional, Union
 
 
@@ -63,7 +64,7 @@ class Coord:
         return f'Coord: ({self.x}, {self.y}) <-- {self._name}'
 
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: Coord) -> bool:
         """
         Return True if the coordinates are equal, False otherwise.
         
