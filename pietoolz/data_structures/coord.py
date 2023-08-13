@@ -62,6 +62,24 @@ class Coord:
         if self._name is None:
             return f'Coord: ({self.x}, {self.y})'
         return f'Coord: ({self.x}, {self.y})  <--  {self._name}'
+    
+
+    def __len__(self) -> int:
+        """
+        Return the number of coordinates.
+        
+        Returns
+        -------
+        int
+            The number of coordinates.
+
+        Examples
+        --------
+        >>> p1 = Coord(1, 2)
+        >>> len(p1)
+        2
+        """
+        return 2
 
 
     def __eq__(self, other: Coord) -> bool:
