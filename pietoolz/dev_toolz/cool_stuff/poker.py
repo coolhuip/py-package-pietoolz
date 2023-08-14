@@ -2,19 +2,34 @@ from __future__ import annotations
 from typing import Any, Optional, Union
 import random as r
 
-
-
-
+from poker_exceptions import JokerCountException
+from poker_exceptions import InvalidSuitException
+from poker_exceptions import InvalidRankException
 
 class Card:
     """
     Card class.
+
+    Dev Representation Invariants
+    -----------------------------
+    - Once instantiated, a Card object CANNOT change the instance attributes
+    <_suit> or <_rank>.
+    - If a joker Card is instantiated, it will be randomly assigned either a
+    black or a colored variant. This CANNOT be changed.
     """
+    # Private Attributes
     _suit: str
     _rank: str
-    _writing: Optional[str]
+    _is_joker_blk: bool
+    _is_joker_clr: bool
+    _is_face_up: bool
+    _feltpen_msg: Optional[str]
+
+    # Class Attribute
+    _id: int = 0
 
 
+    # Class Constants
     RANK_STRS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
                  'J', 'Q', 'K'
                 ]
@@ -30,36 +45,196 @@ class Card:
                   }
 
 
-    def __init__(self, suit: str, rank: int) -> None:
+    def __init__(self,
+                 suit: str,
+                 rank: int,
+                 is_face_up=True,
+                 ) -> None:
         """
+        Pass in <suit='joker'> and <rank=0> to instantiate a joker Card.
+
         >>> c1 = Card('h', 13)
         >>> c1._suit
         '♥'
         >>> c1._rank
         'K'
-        >>> c2 = Card('heart', 1)
+        >>> c2 = Card('joker', 0)
+        >>> c2.get_suit()
+        'j0ker'
+        >>> c2.get_rank()
+        'j0ker'
         """
-        # Error checks
-        if suit.lower() not in self.SUIT_STRS:
-            raise InvalidSuitException
-        if rank not in range(1, 14):
-            raise InvalidRankException
-        # init
-        self._suit = self.SUIT_EMOJIS[suit.lower()[0]]
-        self._rank = self.RANK_STRS[rank-1]
+        if suit == 'joker' or rank == 0:
+            # Init
+            self._suit = self._rank = 'j0ker'
+            if r.choice(['clr', 'blk']) == 'clr':
+                self._is_joker_clr = True
+                self._is_joker_blk = False
+            else:
+                self._is_joker_clr = False
+                self._is_joker_blk = True
+
+        else:
+            # Error checks
+            if suit.lower() not in self.SUIT_STRS:
+                raise InvalidSuitException
+            if rank not in range(1, 14):
+                raise InvalidRankException
+            # init
+            self._suit = self.SUIT_EMOJIS[suit.lower()[0]]
+            self._rank = self.RANK_STRS[rank-1]
+            self._is_face_up = is_face_up
+
+        self._id += 1
+
+
+    def __str__(self) -> str:
+        """
+        Return a str representation of this Card.
+
+        >>> c1 = Card('joker', 0)
+        >>> c1.get_id()
+        1
+        >>> str(c1)
+        'j0ker: clr'
+        """
+        if self._is_joker_blk:
+            return 'j0ker: blk'
+        elif self._is_joker_clr:
+            return 'j0ker: clr'
+        return f'{self._suit}{self._rank}'
     
     
+    def flip(self) -> None:
+        """
+        Flip the card, changing its face-up status.
+
+        Returns
+        -------
+            str: The new status of this Card.
+        """
+        self._is_face_up = not self._is_face_up
+        if self._is_face_up:
+            if self.is_joker_blk():
+                return f'j0ker (blk)'
+            if self.is_joker_clr():
+                return f'j0ker (clr)'
+            return f'{self._suit}{self._rank}'
+
+
+    def is_face_up(self) -> bool:
+        """
+        Check if the card is face up.
+
+        Returns
+        -------
+            bool: True if the card is face up, False otherwise.
+        """
+        return self._is_face_up
+        
+
+    def is_face_down(self) -> bool:
+        """
+        Check if the card is face down.
+
+        Returns
+        -------
+            bool: True if the card is face down, False otherwise.
+        """
+        return not self._is_face_up
+
+
+    def is_joker(self) -> bool:
+        """
+        Check if the card is a joker.
+
+        Returns
+        -------
+            bool: True if the card is a joker, False otherwise.
+        """
+        return self._suit == 'j0ker'
+
+
+    def is_joker_blk(self) -> bool:
+        """
+        Check if the card is a black joker.
+
+        Returns
+        -------
+            bool: True if the card is a black joker, False otherwise.
+        """
+        return self._is_joker_blk
+
+
+    def is_joker_clr(self) -> bool:
+        """
+        Check if the card is a colored joker.
+
+        Returns
+        -------
+            bool: True if the card is a colored joker, False otherwise.
+        """
+        return self._is_joker_clr
+    
+
+    def write_feltpen_msg(self, msg: str) -> str:
+        """
+        Write a message on the card with a felt pen.
+
+        Args
+        ----
+            msg (str): The message to write.
+
+        Returns
+        -------
+            str: The written message.
+        """
+        self._feltpen_msg = msg
+        return msg
+
+
     def get_suit(self):
-        pass
+        """
+        Get the suit of the card.
+
+        Returns
+        -------
+            str: The suit of the card.
+        """
+        return self._suit
 
 
     def get_rank(self):
-        pass
+        """
+        Get the rank of the card.
+
+        Returns
+        -------
+            str: The rank of the card.
+        """
+        return self._rank
 
 
-    def write_feltpen(self):
-        pass
-        
+    def get_id(self):
+        """
+        Get the ID of the card.
+
+        Returns
+        -------
+            int: The ID of the card.
+        """
+        return self._id
+    
+    
+    def get_feltpen_msg(self) -> Optional[None]:
+        """
+        Get the felt pen message written on the card.
+
+Returns:
+    Optional[str]: The message, if present; None otherwise.
+        """
+        return self._feltpen_msg
+    
 
 class Deck:
     """
@@ -78,15 +253,15 @@ class Deck:
     
     Client Code
     -----------
-    # >>> my_deck = Deck()
-    # >>> my_deck.get_joker_count()
-    # 0
-    # >>> another_deck = Deck(jokers=1)
-    # >>> another_deck.get_joker_count()
-    # 1
-    # >>> another_deck = Deck(jokers=2)
-    # >>> another_deck.get_joker_count()
-    # 2
+    >>> my_deck = Deck()
+    >>> my_deck.get_joker_count()
+    0
+    >>> another_deck = Deck(jokers=1)
+    >>> another_deck.get_joker_count()
+    1
+    >>> another_deck = Deck(jokers=2)
+    >>> another_deck.get_joker_count()
+    2
     >>> 
 
     Dev Representation Invariants
@@ -103,30 +278,38 @@ class Deck:
 
     def __init__(self, jokers=0) -> None:
         """
-        #TODO
+        Create a Deck of Cards.
         """
         self._joker_count = jokers
-        self._unordered_deck = {
-            'heart': ['1']          #TODO
-        }
+        self._generate_decks()
 
 
-    def _update_deck(self):
+    def _generate_decks(self):
         """
-        Update both deck representations.
-
-        Dev Code
-        --------
-        >>> #TODO
+        Generate both the ordered AND the unordered deck representations.
         """
         pass
 
 
-    def get_joker_count(self):
+    def _update_decks(self):
+        """
+        Update both the ordered AND the unordered deck representations.
+        """
         pass
 
 
-class Poker(Deck):
+    def get_joker_count(self) -> int:
+        """
+        Get the count of joker cards in the deck.
+
+        Returns
+        -------
+            int: The number of joker cards.
+        """
+        return self._joker_count
+
+
+class Poker():
     """
     Parent class for different variations of the poker game.
         First Betting Round: Players fold, call, or raise in turn.
@@ -168,16 +351,6 @@ class Poker(Deck):
     Happy Playing!
     """
     pass
-
-
-class InvalidSuitException(Exception):
-    def __init__(self):
-        super().__init__("<suit> must be 's', 'h', 'd', or 'c'.")
-
-
-class InvalidRankException(Exception):
-    def __init__(self):
-        super().__init__("<rank> must be an integer member of [1, 13].")
 
 
 if __name__ == '__main__':
