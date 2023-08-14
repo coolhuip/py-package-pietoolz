@@ -1,3 +1,6 @@
+import pygame as pg
+
+
 class Atom:
     pass
 
