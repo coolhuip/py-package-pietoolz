@@ -89,12 +89,12 @@ class Deck:
     # 2
     >>> 
 
-    Dev Representaion Invariants
-    ----------------------------
+    Dev Representation Invariants
+    -----------------------------
     - Inbetween method calls, the instance fields <_ordered_deck> and
       <_unordered_deck> must share the same number of cards remaining in the
-      Deck. In other words, the two instance fields are two different
-      representations of the current status of the Deck.
+      Deck. I.e., the two instance fields are two different representations
+      of the current status of the Deck.
     """
     _joker_count: int
     _ordered_deck: list[Card]
@@ -107,7 +107,7 @@ class Deck:
         """
         self._joker_count = jokers
         self._unordered_deck = {
-            'heart': ['1']
+            'heart': ['1']          #TODO
         }
 
 
