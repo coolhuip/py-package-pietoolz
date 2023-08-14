@@ -2,6 +2,7 @@ build/
 dist/
 *.egg-info/
 .vscode
+__pycache__/
 
 note*.txt
 
