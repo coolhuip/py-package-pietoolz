@@ -4,3 +4,5 @@ dist/
 .vscode
 
 note*.txt
+
+publish_pietoolz.py
