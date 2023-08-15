@@ -57,8 +57,7 @@ class Card:
 
     Notes for Client Code
     ---------------------
-    Please do NOT directly access any instance or class attributes. They are
-    only public b/c I can't be bothered with it.
+    The methods are designed to be extensible for general purposes. Use them.
 
     __Dev Representation Invariants
     -------------------------------
@@ -67,18 +66,18 @@ class Card:
     - The same applies for a joker card and its color.
     """
     # Class Attribute:
-    num_card_instances: int = 0
-    
+    __num_card_instances: int = 0
+
     # Instance Attributes:
     # --------------------
     # Basic playing-card info
-    rank: str
-    suit: str
+    _rank: str
+    _suit: str
     # Card status
-    is_face_up: bool
-    is_joker: bool
+    _is_face_up: bool
+    _is_joker: bool
     # Misc
-    id: int
+    _id: int
 
 
     def __init__(self, rank: int, suit: str) -> None:
@@ -114,31 +113,31 @@ class Card:
         # Suit: j0ker
         if (c:=suit[0].lower()) == 'j':
             if rank == 0:
-                self.rank = 'black'
+                self._rank = 'black'
             elif rank == 255:
-                self.rank = 'c0l0r'
-            self.suit = 'j0ker'
-            self.is_joker = True
+                self._rank = 'c0l0r'
+            self._suit = 'j0ker'
+            self._is_joker = True
         # Suits: Spades, Hearts, Diamonds, Clubs
         else:
-            self.is_joker = False
-            self.rank = rank
+            self._is_joker = False
+            self._rank = rank
             # Spade
             if c == 's':
-                self.suit = 'Spades'
+                self._suit = 'Spades'
             # Hearts
             elif c == 'h':
-                self.suit = 'Hearts'
+                self._suit = 'Hearts'
             # Diamonds
             elif c == 'd':
-                self.suit = 'Diamonds'
+                self._suit = 'Diamonds'
             # Clubs
             elif c == 'c':
-                self.suit = 'Clubs'
+                self._suit = 'Clubs'
         # Housekeeping
-        self.is_face_up = False
-        self.id = self.num_card_instances
-        self.num_card_instances += 1
+        self._is_face_up = False
+        self._id = self.__num_card_instances
+        self.__num_card_instances += 1
 
 
     def __str__(self) -> str:
@@ -183,17 +182,17 @@ class Card:
         >>> joker2.get()
         '< c0l0r j0ker >'
         """
-        if self.is_joker:
-            return f'< {self.rank} j0ker >'
-        if self.rank == 1:
-            return f'< Ace of {self.suit} >'
-        elif self.rank == 11:
-            return f'< Jack of {self.suit} >'
-        elif self.rank == 12:
-            return f'< Queen of {self.suit} >'
-        elif self.rank == 13:
-            return f'< King of {self.suit} >'
-        return f'< {self.rank} of {self.suit} >'
+        if self._is_joker:
+            return f'< {self._rank} j0ker >'
+        if self._rank == 1:
+            return f'< Ace of {self._suit} >'
+        elif self._rank == 11:
+            return f'< Jack of {self._suit} >'
+        elif self._rank == 12:
+            return f'< Queen of {self._suit} >'
+        elif self._rank == 13:
+            return f'< King of {self._suit} >'
+        return f'< {self._rank} of {self._suit} >'
 
 
     def print(self) -> None:
@@ -205,6 +204,44 @@ class Card:
         #TODO
         """
         pass
+
+
+    @staticmethod
+    def print_help() -> None:
+        """
+        Print the manual on how to instantiate a Card object.
+        """
+        print(f"\
+\n\
+             TUTORIAL:\n\
++----------------------------------+\n\
+| How to instantiate a Card object |\n\
++----------------------------------+\n\
+\n\
+Pre-conditions:\n\
+\n\
+1. For a standard number card:\n\
+    >>> ace_spades = Card(1, 's')\n\
+    >>> ace_spades = Card(1, 'S')\n\
+    >>> ace_spades = Card(1, 'spades')\n\
+    >>> ace_spades = Card(1, 'Spades')\n\
+    >>> ace_spades = Card(1, 'spade')\n\
+    >>> ace_spades = Card(1, 'Spade')\n\
+\n\
+2. For a standard face card:\n\
+    >>> jack_hearts = Card(11, 'h')\n\
+    >>> queen_diamonds = Card(12, 'd')\n\
+    >>> king_clubs = Card(13, 'c')\n\
+\n\
+3. For a black joker card:\n\
+    >>> black_joker = Card(0, 'joker')\n\
+\n\
+4. For a color joker card:\n\
+    >>> color_joker = Card(255, 'joker')\n\
+\n\
+If the pre-conditions above are NOT satisfied, an InvalidArgException \
+is raised. Try again with the correct args.\n"
+             )
 
 
 class Deck:
@@ -219,24 +256,14 @@ class Deck:
 
     Pre-Condition
     -------------
-    - <jokers> must be either 0, 1, or 2. Otherwise, an exception will
-      be raised.
+    - 
     
     Client Code
     -----------
-    # >>> my_deck = Deck()
-    # >>> my_deck.get_joker_count()
-    # 0
-    # >>> another_deck = Deck(jokers=1)
-    # >>> another_deck.get_joker_count()
-    # 1
-    # >>> another_deck = Deck(jokers=2)
-    # >>> another_deck.get_joker_count()
-    # 2
-    # >>> 
+    >>> 
 
-    Dev Representation Invariants
-    -----------------------------
+    __Dev Representation Invariants
+    -------------------------------
     - Inbetween method calls, the instance fields <_ordered_deck> and
       <_unordered_deck> must share the same number of cards remaining in the
       Deck. I.e., the two instance fields are two different representations
@@ -245,7 +272,7 @@ class Deck:
     _joker_count: int
     _ordered_deck: list[Card]
     _unordered_deck: dict[str, list[str]]
-    
+
 
     def __init__(self, jokers=0) -> None:
         """
@@ -325,11 +352,36 @@ class Poker():
 
 
 class InvalidArgException(Exception):
-    def __init__(self, msg) -> None:
+    def __init__(self) -> None:
         super().__init__("\
+\n\n\
++----------------------------------+\n\
+| How to instantiate a Card object |\n\
++----------------------------------+\n\
 \n\
-f\
+Pre-conditions:\n\
 \n\
+1. For a standard number card:\n\
+    >>> ace_spades = Card(1, 's')\n\
+    >>> ace_spades = Card(1, 'S')\n\
+    >>> ace_spades = Card(1, 'spades')\n\
+    >>> ace_spades = Card(1, 'Spades')\n\
+    >>> ace_spades = Card(1, 'spade')\n\
+    >>> ace_spades = Card(1, 'Spade')\n\
+\n\
+2. For a standard face card:\n\
+    >>> jack_hearts = Card(11, 'h')\n\
+    >>> queen_diamonds = Card(12, 'd')\n\
+    >>> king_clubs = Card(13, 'c')\n\
+\n\
+3. For a black joker card:\n\
+    >>> black_joker = Card(0, 'joker')\n\
+\n\
+4. For a color joker card:\n\
+    >>> color_joker = Card(255, 'joker')\n\
+\n\
+If the pre-conditions above are NOT satisfied, this InvalidArgException \
+is raised. Try again with the correct args.\n\
 "
                         )
 
@@ -337,3 +389,6 @@ f\
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
+
+    # Tests: Edge Cases
+    Card(3, 'heaRt')
