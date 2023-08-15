@@ -1,240 +1,211 @@
+"""
+NOTE: Always start with the client code. Always. Delay the gratification of
+      writing code, and the code will be kind to you.
+
+      If you begin your business logic from the fields THEN onto the client
+      code, you will run into silly problems that render further efforts void.
+"""
 from __future__ import annotations
 from typing import Any, Optional, Union
-import random as r
+import random as rand
 
-from poker_exceptions import JokerCountException
-from poker_exceptions import InvalidSuitException
-from poker_exceptions import InvalidRankException
+
+CARD_SUITS_EMJ: tuple = ('♠', '♥', '♦', '♣')
+CARD_SUITS_STR: tuple = ('Spades', 'Hearts', 'Diamonds', 'Clubs')
+CARD_RANKS: tuple = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King')
+
+STANDARD_DECK_EMJ: dict = {'♠': CARD_RANKS,
+                           '♥': CARD_RANKS,
+                           '♦': CARD_RANKS,
+                           '♣': CARD_RANKS
+                          }
+
+STANDARD_DECK_STR: dict = {'Spades': CARD_RANKS,
+                     'Hearts': CARD_RANKS,
+                     'Diamonds': CARD_RANKS,
+                     'Clubs': CARD_RANKS
+                    }
+
+VALID_RANKS: tuple = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 255)
+VALID_SUITS: tuple = ('s', 'S', 'spades', 'spade', 'Spades', 'Spade',
+                      'SPADES', 'SPADE', 'spd', 'SPD',
+                      'h', 'H', 'hearts', 'heart', 'Hearts', 'Heart',
+                      'HEARTS', 'HEART', 'hrt', 'HRT',
+                      'd', 'D', 'diamonds', 'diamond', 'Diamonds', 'Diamond',
+                      'DIAMONDS', 'DIAMOND', 'dia', 'DIA',
+                      'c', 'C', 'clubs', 'club', 'Clubs', 'clubs'
+                      'CLUBS', 'CLUB', 'clb', 'CLB',
+                      'j', 'J', 'jok', 'joker', 'Joker', 'JOKER'
+                      'j0ker', 'J0ker', 'J0KER', 'j0k', 'J0k','J0K'
+                     )
+
 
 class Card:
     """
-    Card class.
+    Card object. 54 unique variations of Card can be created:
+    - 52 of the standard 52-card dec
+    - 2 joker Cards: 1 black, 1 color
 
-    Dev Representation Invariants
-    -----------------------------
-    - Once instantiated, a Card object CANNOT change the instance attributes
-    <_suit> or <_rank>.
-    - If a joker Card is instantiated, it will be randomly assigned either a
-    black or a colored variant. This CANNOT be changed.
+    There are no limits as to how many Card() objects of any given variation
+    can be instantiated. It is up to the client code to instantiate the correct
+    number of each Card variation.
+
+    Use Cases
+    ---------
+    Maybe you'd like to design code for a poker game. Use the Card class to
+    generate the cards that you need.
+
+    Notes for Client Code
+    ---------------------
+    Please do NOT directly access any instance or class attributes. They are
+    only public b/c I can't be bothered with it.
+
+    __Dev Representation Invariants
+    -------------------------------
+    - Once instantiated, a Card object must NOT change the instance attributes
+    <suit> or <rank>... Ever.
+    - The same applies for a joker card and its color.
     """
-    # Private Attributes
-    _suit: str
-    _rank: str
-    _is_joker_blk: bool
-    _is_joker_clr: bool
-    _is_face_up: bool
-    _feltpen_msg: Optional[str]
-
-    # Class Attribute
-    _id: int = 0
-
-
-    # Class Constants
-    RANK_STRS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
-                 'J', 'Q', 'K'
-                ]
-    SUIT_STRS = ['spade', 'spades', 's',
-                'heart', 'hearts', 'h',
-                'diamond', 'diamonds', 'd',
-                'club', 'clubs', 'c'
-                ]
-    SUIT_EMOJIS = {'s': '♠',
-                   'h': '♥',
-                   'd': '♦',
-                   'c': '♣'
-                  }
+    # Class Attribute:
+    num_card_instances: int = 0
+    
+    # Instance Attributes:
+    # --------------------
+    # Basic playing-card info
+    rank: str
+    suit: str
+    # Card status
+    is_face_up: bool
+    is_joker: bool
+    # Misc
+    id: int
 
 
-    def __init__(self,
-                 suit: str,
-                 rank: int,
-                 is_face_up=True,
-                 ) -> None:
+    def __init__(self, rank: int, suit: str) -> None:
         """
-        Pass in <suit='joker'> and <rank=0> to instantiate a joker Card.
+        Pre-conditions
+        --------------
+        1. For a standard number card:
+            >>> ace_spades = Card(1, 's')
+            >>> ace_spades = Card(1, 'S')
+            >>> ace_spades = Card(1, 'spades')
+            >>> ace_spades = Card(1, 'Spades')
+            >>> ace_spades = Card(1, 'spade')
+            >>> ace_spades = Card(1, 'Spade')
 
-        >>> c1 = Card('h', 13)
-        >>> c1._suit
-        '♥'
-        >>> c1._rank
-        'K'
-        >>> c2 = Card('joker', 0)
-        >>> c2.get_suit()
-        'j0ker'
-        >>> c2.get_rank()
-        'j0ker'
+        2. For a standard face card:
+            >>> jack_hearts = Card(11, 'h')
+            >>> queen_diamonds = Card(12, 'd')
+            >>> king_clubs = Card(13, 'c')
+
+        3. For a black joker card:
+            >>> black_joker = Card(0, 'joker')
+
+        4. For a color joker card:
+            >>> color_joker = Card(255, 'joker')
+
+        Exceptions
+        ----------
+        If the pre-conditions above are NOT satisfied, Exceptions are raised.
         """
-        if suit == 'joker' or rank == 0:
-            # Init
-            self._suit = self._rank = 'j0ker'
-            if r.choice(['clr', 'blk']) == 'clr':
-                self._is_joker_clr = True
-                self._is_joker_blk = False
-            else:
-                self._is_joker_clr = False
-                self._is_joker_blk = True
-
+        # Check: Invalid Args
+        if (rank not in VALID_RANKS) or (suit not in VALID_SUITS):
+            raise InvalidArgException
+        # Suit: j0ker
+        if (c:=suit[0].lower()) == 'j':
+            if rank == 0:
+                self.rank = 'black'
+            elif rank == 255:
+                self.rank = 'c0l0r'
+            self.suit = 'j0ker'
+            self.is_joker = True
+        # Suits: Spades, Hearts, Diamonds, Clubs
         else:
-            # Error checks
-            if suit.lower() not in self.SUIT_STRS:
-                raise InvalidSuitException
-            if rank not in range(1, 14):
-                raise InvalidRankException
-            # init
-            self._suit = self.SUIT_EMOJIS[suit.lower()[0]]
-            self._rank = self.RANK_STRS[rank-1]
-            self._is_face_up = is_face_up
-
-        self._id += 1
+            self.is_joker = False
+            self.rank = rank
+            # Spade
+            if c == 's':
+                self.suit = 'Spades'
+            # Hearts
+            elif c == 'h':
+                self.suit = 'Hearts'
+            # Diamonds
+            elif c == 'd':
+                self.suit = 'Diamonds'
+            # Clubs
+            elif c == 'c':
+                self.suit = 'Clubs'
+        # Housekeeping
+        self.is_face_up = False
+        self.id = self.num_card_instances
+        self.num_card_instances += 1
 
 
     def __str__(self) -> str:
         """
+        Return:
+            str, representation of this Card.
+
+        Client Code
+        -----------
+        >>> ace_spades = Card(1, 'spades')
+        >>> str(ace_spades)
+        '< Ace of Spades >'
+        >>> str(Card(7, 'diamond'))
+        '< 7 of Diamonds >'
+        >>> str(Card(13, 'Hearts'))
+        '< King of Hearts >'
+        >>> str(Card(0, 'joker'))
+        '< black j0ker >'
+        >>> str(Card(255, 'Joker'))
+        '< c0l0r j0ker >'
+        """
+        return self.get()
+    
+
+    def get(self) -> str:
+        """
         Return a str representation of this Card.
 
-        >>> c1 = Card('joker', 0)
-        >>> c1.get_id()
-        1
-        >>> str(c1)
-        'j0ker: clr'
+        Client Code
+        -----------
+        >>> ace_spades = Card(1, 'spades')
+        >>> ace_spades.get()
+        '< Ace of Spades >'
+        >>> str(Card(7, 'diamond'))
+        '< 7 of Diamonds >'
+        >>> Card(13, 'Hearts').get()
+        '< King of Hearts >'
+        >>> joker1 = Card(0, 'joker')
+        >>> joker1.get()
+        '< black j0ker >'
+        >>> joker2 = Card(255, 'joker')
+        >>> joker2.get()
+        '< c0l0r j0ker >'
         """
-        if self._is_joker_blk:
-            return 'j0ker: blk'
-        elif self._is_joker_clr:
-            return 'j0ker: clr'
-        return f'{self._suit}{self._rank}'
-    
-    
-    def flip(self) -> None:
+        if self.is_joker:
+            return f'< {self.rank} j0ker >'
+        if self.rank == 1:
+            return f'< Ace of {self.suit} >'
+        elif self.rank == 11:
+            return f'< Jack of {self.suit} >'
+        elif self.rank == 12:
+            return f'< Queen of {self.suit} >'
+        elif self.rank == 13:
+            return f'< King of {self.suit} >'
+        return f'< {self.rank} of {self.suit} >'
+
+
+    def print(self) -> None:
         """
-        Flip the card, changing its face-up status.
+        "Draw" this card in the console output.
 
-        Returns
-        -------
-            str: The new status of this Card.
+        Cilent Code
+        -----------
+        #TODO
         """
-        self._is_face_up = not self._is_face_up
-        if self._is_face_up:
-            if self.is_joker_blk():
-                return f'j0ker (blk)'
-            if self.is_joker_clr():
-                return f'j0ker (clr)'
-            return f'{self._suit}{self._rank}'
+        pass
 
-
-    def is_face_up(self) -> bool:
-        """
-        Check if the card is face up.
-
-        Returns
-        -------
-            bool: True if the card is face up, False otherwise.
-        """
-        return self._is_face_up
-        
-
-    def is_face_down(self) -> bool:
-        """
-        Check if the card is face down.
-
-        Returns
-        -------
-            bool: True if the card is face down, False otherwise.
-        """
-        return not self._is_face_up
-
-
-    def is_joker(self) -> bool:
-        """
-        Check if the card is a joker.
-
-        Returns
-        -------
-            bool: True if the card is a joker, False otherwise.
-        """
-        return self._suit == 'j0ker'
-
-
-    def is_joker_blk(self) -> bool:
-        """
-        Check if the card is a black joker.
-
-        Returns
-        -------
-            bool: True if the card is a black joker, False otherwise.
-        """
-        return self._is_joker_blk
-
-
-    def is_joker_clr(self) -> bool:
-        """
-        Check if the card is a colored joker.
-
-        Returns
-        -------
-            bool: True if the card is a colored joker, False otherwise.
-        """
-        return self._is_joker_clr
-    
-
-    def write_feltpen_msg(self, msg: str) -> str:
-        """
-        Write a message on the card with a felt pen.
-
-        Args
-        ----
-            msg (str): The message to write.
-
-        Returns
-        -------
-            str: The written message.
-        """
-        self._feltpen_msg = msg
-        return msg
-
-
-    def get_suit(self):
-        """
-        Get the suit of the card.
-
-        Returns
-        -------
-            str: The suit of the card.
-        """
-        return self._suit
-
-
-    def get_rank(self):
-        """
-        Get the rank of the card.
-
-        Returns
-        -------
-            str: The rank of the card.
-        """
-        return self._rank
-
-
-    def get_id(self):
-        """
-        Get the ID of the card.
-
-        Returns
-        -------
-            int: The ID of the card.
-        """
-        return self._id
-    
-    
-    def get_feltpen_msg(self) -> Optional[None]:
-        """
-        Get the felt pen message written on the card.
-
-Returns:
-    Optional[str]: The message, if present; None otherwise.
-        """
-        return self._feltpen_msg
-    
 
 class Deck:
     """
@@ -253,16 +224,16 @@ class Deck:
     
     Client Code
     -----------
-    >>> my_deck = Deck()
-    >>> my_deck.get_joker_count()
-    0
-    >>> another_deck = Deck(jokers=1)
-    >>> another_deck.get_joker_count()
-    1
-    >>> another_deck = Deck(jokers=2)
-    >>> another_deck.get_joker_count()
-    2
-    >>> 
+    # >>> my_deck = Deck()
+    # >>> my_deck.get_joker_count()
+    # 0
+    # >>> another_deck = Deck(jokers=1)
+    # >>> another_deck.get_joker_count()
+    # 1
+    # >>> another_deck = Deck(jokers=2)
+    # >>> another_deck.get_joker_count()
+    # 2
+    # >>> 
 
     Dev Representation Invariants
     -----------------------------
@@ -351,6 +322,16 @@ class Poker():
     Happy Playing!
     """
     pass
+
+
+class InvalidArgException(Exception):
+    def __init__(self, msg) -> None:
+        super().__init__("\
+\n\
+f\
+\n\
+"
+                        )
 
 
 if __name__ == '__main__':
