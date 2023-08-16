@@ -4,6 +4,9 @@ NOTE: Always start with the client code. Always. Delay the gratification of
 
       If you begin your business logic from the fields THEN onto the client
       code, you will run into silly problems that render further efforts void.
+    
+NOTE: Never make the developer code the business of the client code,
+      especially the problematic part of the developer code.
 """
 from __future__ import annotations
 from typing import Any, Optional, Union
@@ -20,13 +23,13 @@ STANDARD_DECK_EMJ: dict = {'♠': CARD_RANKS,
                            '♥': CARD_RANKS,
                            '♦': CARD_RANKS,
                            '♣': CARD_RANKS
-                           }
+                          }
 
 STANDARD_DECK_STR: dict = {'Spades': CARD_RANKS,
                            'Hearts': CARD_RANKS,
                            'Diamonds': CARD_RANKS,
                            'Clubs': CARD_RANKS
-                           }
+                          }
 
 VALID_RANKS: tuple = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 255)
 VALID_SUITS: tuple = ('s', 'S', 'spades', 'spade', 'Spades', 'Spade',
@@ -39,7 +42,7 @@ VALID_SUITS: tuple = ('s', 'S', 'spades', 'spade', 'Spades', 'Spade',
                       'CLUBS', 'CLUB', 'clb', 'CLB',
                       'j', 'J', 'jok', 'joker', 'Joker', 'JOKER'
                       'j0ker', 'J0ker', 'J0KER', 'j0k', 'J0k','J0K'
-                       )
+                     )
 
 STD_DECK_STR: str = 'Standard 52-Card Deck'
 
@@ -47,26 +50,32 @@ STD_DECK_STR: str = 'Standard 52-Card Deck'
 class Card:
     """
     Card object. 54 unique variations of Card can be created:
-    - 52 of the standard 52-card dec
+    - 52 of the standard 52-card deck
     - 2 joker Cards: 1 black, 1 color
 
     There are no limits as to how many Card() objects of any given variation
     can be instantiated. It is up to the client code to instantiate the correct
     number of each Card variation.
 
+    NOTE: Card objects are not truly unique b/c it's possible to instantiate
+    more than one Card that share the same rank and suit, but with different
+    instance IDs.
+
     Use Cases
     ---------
-    Maybe you'd like to design code for a poker game. Use the Card class to
-    generate the cards that you need.
+    Maybe you'd like to design code for a poker game. Use this Card class to
+    generate the cards that you need for your deck. The combinations of Card
+    objects you can instantiate are infinite, limited only by memory space.
 
     Notes for Client Code
     ---------------------
-    The methods are designed to be extensible for general purposes. Use them.
+    This class is designed to be used with instance/static methods only, b/c
+    these methods are designed to be extensible for general purposes.
 
-    __Dev Representation Invariants
-    -------------------------------
-    - Once instantiated, a Card object must NOT change the instance attributes
-    <suit> or <rank>... Ever.
+    Representation Invariants
+    -------------------------
+    - Once instantiated, the instance attributes, <_suit> and <_rank>, cannot
+    be changed. In other words, they are immutable.
     - The same applies for a joker card and its color.
     """
     # Class Attribute:
@@ -165,7 +174,7 @@ class Card:
         '< c0l0r j0ker >'
         """
         return self.get()
-    
+
 
     def get(self) -> str:
         """
@@ -206,7 +215,6 @@ class Card:
 
         Cilent Code
         -----------
-        #TODO
         """
         pass
 
@@ -221,7 +229,7 @@ class Card:
         Uncomment the line of code below:
         >>> # Card.get_some_help()
         """
-print(f"\n\
+print("\n\
              TUTORIAL:\n\
 +----------------------------------+\n\
 | How to instantiate a Card object |\n\
@@ -251,9 +259,10 @@ class Deck:
     """
     What the Deck?
     ==============
-    Essentially, the Deck object is a collection of Card objects. It provides
-    useful methods that can be used to design a number of games that involve
-    traditional playing cards, such as poker and blackjack.
+    Essentially, the Deck object is a Stack representation of Card objects.
+    It provides useful methods that can be used to design a number of games
+    that involve decks of traditional playing cards, such as go-fish, poker,
+    and blackjack.
 
     Client Code
     -----------
@@ -408,7 +417,7 @@ class Deck:
         """
         Shuffle the currently-remaining cards in this Deck.
         """
-        pass
+        
 
 
     def draw_card_from_top(self) -> str:
@@ -461,48 +470,48 @@ class Poker():
     """
     Poker Hands
     ===========
-    Find below all types of hands in Texas hold'em, starting from the highest
-    rank.
+    Find below all types of hands in Texas hold'em, starting w/ the hand of
+    the highest rank. 
 
     Royal Flush: 10♠ J♠ Q♠ K♠ A♠
     ------------
-        * The best possible hand in Texas hold'em: ten, jack,queen, king, ace, all of the same suit
+        - The best possible hand in Texas hold'em: ten, jack, queen, king, ace, all of the same suit
 
     Straight Flush: 5♥ 6♥ 7♥ 8♥ 9♥
     ---------------
-        * Five cards of the same suit in sequential order
+        - Five cards of the same suit in sequential order
 
     Four of a kind: 3♣ 3♠ 3♦ 3♥ 4♦
     ---------------
-        * Any four numerically matching cards
+        - Any four numerically matching cards
 
     Full house: J♠ J♥ J♣ K♣ K♦
     -----------
-        * Combination of three of a kind and a pair in the same hand
+        - Combination of three of a kind and a pair in the same hand
 
     Flush: 2♦ 4♦ 5♦ 9♦ K♦
     ------
-        * Five cards of the same suit, in any order
+        - Five cards of the same suit, in any order
 
     Straight: A♦ 2♣ 3♦ 4♠ 5♣
     ---------
-        * Five cards of any suit, in sequential order
+        - Five cards of any suit, in sequential order
 
     Three of a kind: 7♣ 7♦ 7♠ 4♣ 5♦
     ----------------
-        * Any three numerically matching cards
+        - Any three numerically matching cards
 
     Two pair: 9♦ 9♠ K♦ K♥ 4♣
     ---------
-        * Two different pairs in the same hand
+        - Two different pairs in the same hand
 
     One pair: 10♦ 10♠ 3♠ Q♦ K♣
     ---------
-        * Any two numerically matching cards
+        - Any two numerically matching cards
 
     High card: K♣ 2♥ 4♦ 8♦ Q♠
     ----------
-        * The highest ranked card in your hand with an ace being the highest and two being the lowest
+        - The highest ranked card in your hand with an ace being the highest and two being the lowest
 
     ===================================
 
@@ -531,20 +540,6 @@ class Poker():
         Last Player: Remaining player if others fold.
         Tie: Split pot if hands are equal.
 
-    Hand Rankings (Highest to Lowest):
-        Royal Flush
-        Straight Flush
-        Four of a Kind
-        Full House
-        Flush
-        Straight
-        Three of a Kind
-        Two Pair
-        One Pair
-        High Card
-
-    This hierarchy covers the essential rules and structure of Texas Hold'em.
-    
     Happy Playing!
     ==============
     """
