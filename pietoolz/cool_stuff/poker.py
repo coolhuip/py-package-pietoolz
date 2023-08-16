@@ -18,13 +18,13 @@ STANDARD_DECK_EMJ: dict = {'♠': CARD_RANKS,
                            '♥': CARD_RANKS,
                            '♦': CARD_RANKS,
                            '♣': CARD_RANKS
-                          }
+                           }
 
 STANDARD_DECK_STR: dict = {'Spades': CARD_RANKS,
-                     'Hearts': CARD_RANKS,
-                     'Diamonds': CARD_RANKS,
-                     'Clubs': CARD_RANKS
-                    }
+                           'Hearts': CARD_RANKS,
+                           'Diamonds': CARD_RANKS,
+                           'Clubs': CARD_RANKS
+                           }
 
 VALID_RANKS: tuple = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 255)
 VALID_SUITS: tuple = ('s', 'S', 'spades', 'spade', 'Spades', 'Spade',
@@ -37,7 +37,9 @@ VALID_SUITS: tuple = ('s', 'S', 'spades', 'spade', 'Spades', 'Spade',
                       'CLUBS', 'CLUB', 'clb', 'CLB',
                       'j', 'J', 'jok', 'joker', 'Joker', 'JOKER'
                       'j0ker', 'J0ker', 'J0KER', 'j0k', 'J0k','J0K'
-                     )
+                       )
+
+STD_DECK_INFO: str = 'Standard 52-Card Deck'
 
 
 class Card:
@@ -84,7 +86,7 @@ class Card:
         """
         Pre-conditions
         --------------
-        1. For a standard number card:
+        1. To create a standard number card:
             >>> ace_spades = Card(1, 's')
             >>> ace_spades = Card(1, 'S')
             >>> ace_spades = Card(1, 'spades')
@@ -92,20 +94,21 @@ class Card:
             >>> ace_spades = Card(1, 'spade')
             >>> ace_spades = Card(1, 'Spade')
 
-        2. For a standard face card:
+        2. To create a standard face card:
             >>> jack_hearts = Card(11, 'h')
             >>> queen_diamonds = Card(12, 'd')
             >>> king_clubs = Card(13, 'c')
 
-        3. For a black joker card:
+        3. To create a black joker card:
             >>> black_joker = Card(0, 'joker')
 
-        4. For a color joker card:
+        4. To create a color joker card:
             >>> color_joker = Card(255, 'joker')
 
         Exceptions
         ----------
-        If the pre-conditions above are NOT satisfied, Exceptions are raised.
+        If the pre-conditions above are NOT satisfied, InvalidArgException
+        is raised.
         """
         # Check: Invalid Args
         if (rank not in VALID_RANKS) or (suit not in VALID_SUITS):
@@ -207,11 +210,17 @@ class Card:
 
 
     @staticmethod
-    def print_help() -> None:
+    def get_some_help(trol=None) -> None:
         """
-        Print the manual on how to instantiate a Card object.
+        Print detailed instructions on how to create a Card object.
+
+        How to Use
+        ----------
+        Uncomment the line of code below:
+        >>> # Card.get_some_help()
         """
-        print(f"\
+        if not trol:
+            print(f"\
 \n\
              TUTORIAL:\n\
 +----------------------------------+\n\
@@ -242,73 +251,146 @@ Pre-conditions:\n\
 If the pre-conditions above are NOT satisfied, an InvalidArgException \
 is raised. Try again with the correct args.\n"
              )
+        else:
+            Card().get_some_help()
 
 
 class Deck:
     """
-    Standard 52-card deck.
-    
-    Optional Parameter
-    ------------------
-    jokers=0
-        Enter integers 1 or 2, for the number of joker cards to add
-        to the 52-card deck.
+    What the Deck?
+    ==============
+    Essentially, the Deck object is a collection of Card objects. It provides
+    useful methods that can be used to design a number of games that involve
+    traditional playing cards, such as poker and blackjack.
 
-    Pre-Condition
-    -------------
-    - 
-    
     Client Code
     -----------
-    >>> 
+    There are 2 ways to instantiate a Deck:
 
-    __Dev Representation Invariants
-    -------------------------------
-    - Inbetween method calls, the instance fields <_ordered_deck> and
-      <_unordered_deck> must share the same number of cards remaining in the
-      Deck. I.e., the two instance fields are two different representations
-      of the current status of the Deck.
+    1. Suppose: You want to quickly instantiate a standard 52-card deck, plus
+    with (or without) joker cards. Do the following:
+        >>> my_deck = Deck()
+        >>> my_deck.get_info()
+        {'type': 'Standard 52-Card Deck', 'num_cards': 52, 'joker_count': 0}
+        >>> my_deck.draw_from_top()
+        '< Ace of Spades >'
+        >>> my_deck.draw_from_top()
+        '< Two of Spades >'
+        >>> my_deck.draw_from_top()
+        '< Three of Spades >'
+        >>> # By default, the Deck is shuffled, unless you specify it as shown below:
+        >>> my_unshuffled_deck = Deck(shuffle=False)
+
+    2. Suppose: You want to instantiate your own custom Deck, of any number or
+    combinations of Card objects. Do the following:
+        >>> # Create Card objects
+        >>> ss = Card(7, 's')
+        >>> th = Card(3, 'h')
+        >>> kd = Card(13, 'd')
+        >>> tc = Card(10, 'c')
+        >>> bjokr = Card(0, 'joker')
+        >>> cjokr = Card(255, 'joker')
+        >>> # Create a list of Card objects, in the order you want them stacked in the Deck
+        >>> card_list = [ss, th, kd, tc, bjokr, cjokr]  
+        >>> # Instantiate Deck
+        >>> custom_deck = Deck('cUsToM dEcK', card_list, shuffle=False)
+        >>> custom_deck.get_info()
+        {'deck_type': 'cUsToM dEcK', 'num_cards': 52, 'joker_count': 2}
+        >>> custom_deck.draw_from_top()
+        '< c0l0r j0ker >'
+        >>> custom_deck.draw_from_top()
+        '< black j0ker >'
+        >>> custom_deck.draw_from_top()
+        '< Ten of Clubs >'
+        >>> custom_deck.draw_from_top()
+        '< King of Diamonds >'
+        >>> custom_deck.draw_from_top()
+        '< Three of Hearts >'
+        >>> custom_deck.draw_from_top()
+        '< Seven of Spades >'
+        >>> custom_deck.draw_from_top()
+        None
     """
-    _joker_count: int
-    _ordered_deck: list[Card]
-    _unordered_deck: dict[str, list[str]]
+    #TODO: Declare class/instance attributes.
 
 
-    def __init__(self, jokers=0) -> None:
+    def __init__(self,
+                 deck_name=STD_DECK_INFO,
+                 cust_deck=None,
+                 shuffle=False) -> None:
         """
-        Create a Deck of Cards.
+        Refer to class docstring.
         """
-        self._joker_count = jokers
-        self._generate_decks()
+        raise NotImplementedError
+
+    
+    def draw_from_top(self) -> str:
+        """
+        Refer to class docstring.
+        """
+        raise NotImplementedError
 
 
-    def _generate_decks(self):
+    def get_info(self) -> dict:
         """
-        Generate both the ordered AND the unordered deck representations.
+        Refer to the class docstring.
         """
-        pass
-
-
-    def _update_decks(self):
-        """
-        Update both the ordered AND the unordered deck representations.
-        """
-        pass
-
-
-    def get_joker_count(self) -> int:
-        """
-        Get the count of joker cards in the deck.
-
-        Returns
-        -------
-            int: The number of joker cards.
-        """
-        return self._joker_count
+        raise NotImplementedError
 
 
 class Poker():
     """
+
+
+    Poker Hands
+    ===========
+    Find below all types of hands in Texas hold'em, starting from the highest
+    rank.
+
+    Royal Flush: 10♠ J♠ Q♠ K♠ A♠
+    ------------
+        * The best possible hand in Texas hold'em: ten, jack,queen, king, ace, all of the same suit
+
+    Straight Flush: 5♥ 6♥ 7♥ 8♥ 9♥
+    ---------------
+        * Five cards of the same suit in sequential order
+
+    Four of a kind: 3♣ 3♠ 3♦ 3♥ 4♦
+    ---------------
+        * Any four numerically matching cards
+
+    Full house: J♠ J♥ J♣ K♣ K♦
+    -----------
+        * Combination of three of a kind and a pair in the same hand
+
+    Flush: 2♦ 4♦ 5♦ 9♦ K♦
+    ------
+        * Five cards of the same suit, in any order
+
+    Straight: A♦ 2♣ 3♦ 4♠ 5♣
+    ---------
+        * Five cards of any suit, in sequential order
+
+    Three of a kind: 7♣ 7♦ 7♠ 4♣ 5♦
+    ----------------
+        * Any three numerically matching cards
+
+    Two pair: 9♦ 9♠ K♦ K♥ 4♣
+    ---------
+        * Two different pairs in the same hand
+
+    One pair: 10♦ 10♠ 3♠ Q♦ K♣
+    ---------
+        * Any two numerically matching cards
+
+    High card: K♣ 2♥ 4♦ 8♦ Q♠
+    ----------
+        * The highest ranked card in your hand with an ace being the highest and two being the lowest
+
+    ===================================
+
+    Summary of Texas Hold'em Poker
+    ------------------------------
     Parent class for different variations of the poker game.
         First Betting Round: Players fold, call, or raise in turn.
 
@@ -345,8 +427,9 @@ class Poker():
         High Card
 
     This hierarchy covers the essential rules and structure of Texas Hold'em.
-
+    
     Happy Playing!
+    ==============
     """
     pass
 
@@ -382,8 +465,7 @@ Pre-conditions:\n\
 \n\
 If the pre-conditions above are NOT satisfied, this InvalidArgException \
 is raised. Try again with the correct args.\n\
-"
-                        )
+")
 
 
 if __name__ == '__main__':
@@ -391,4 +473,4 @@ if __name__ == '__main__':
     doctest.testmod()
 
     # Tests: Edge Cases
-    Card(3, 'heaRt')
+    # print(Card(7, 'c').get_some_help())
