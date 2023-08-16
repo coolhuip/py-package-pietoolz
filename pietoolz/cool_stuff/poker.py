@@ -9,6 +9,8 @@ from __future__ import annotations
 from typing import Any, Optional, Union
 import random as rand
 
+from pietoolz.data_structures.stack import Stack
+
 
 CARD_SUITS_EMJ: tuple = ('♠', '♥', '♦', '♣')
 CARD_SUITS_STR: tuple = ('Spades', 'Hearts', 'Diamonds', 'Clubs')
@@ -39,7 +41,7 @@ VALID_SUITS: tuple = ('s', 'S', 'spades', 'spade', 'Spades', 'Spade',
                       'j0ker', 'J0ker', 'J0KER', 'j0k', 'J0k','J0K'
                        )
 
-STD_DECK_INFO: str = 'Standard 52-Card Deck'
+STD_DECK_STR: str = 'Standard 52-Card Deck'
 
 
 class Card:
@@ -210,7 +212,7 @@ class Card:
 
 
     @staticmethod
-    def get_some_help(trol=None) -> None:
+    def get_some_help() -> None:
         """
         Print detailed instructions on how to create a Card object.
 
@@ -219,40 +221,30 @@ class Card:
         Uncomment the line of code below:
         >>> # Card.get_some_help()
         """
-        if not trol:
-            print(f"\
-\n\
+print(f"\n\
              TUTORIAL:\n\
 +----------------------------------+\n\
 | How to instantiate a Card object |\n\
-+----------------------------------+\n\
-\n\
-Pre-conditions:\n\
-\n\
++----------------------------------+\n\n\
+Pre-conditions:\n\n\
 1. For a standard number card:\n\
     >>> ace_spades = Card(1, 's')\n\
     >>> ace_spades = Card(1, 'S')\n\
     >>> ace_spades = Card(1, 'spades')\n\
     >>> ace_spades = Card(1, 'Spades')\n\
     >>> ace_spades = Card(1, 'spade')\n\
-    >>> ace_spades = Card(1, 'Spade')\n\
-\n\
+    >>> ace_spades = Card(1, 'Spade')\n\n\
 2. For a standard face card:\n\
     >>> jack_hearts = Card(11, 'h')\n\
     >>> queen_diamonds = Card(12, 'd')\n\
-    >>> king_clubs = Card(13, 'c')\n\
-\n\
+    >>> king_clubs = Card(13, 'c')\n\n\
 3. For a black joker card:\n\
-    >>> black_joker = Card(0, 'joker')\n\
-\n\
+    >>> black_joker = Card(0, 'joker')\n\n\
 4. For a color joker card:\n\
-    >>> color_joker = Card(255, 'joker')\n\
-\n\
-If the pre-conditions above are NOT satisfied, an InvalidArgException \
-is raised. Try again with the correct args.\n"
-             )
-        else:
-            Card().get_some_help()
+    >>> color_joker = Card(255, 'joker')\n\n\
+If the pre-conditions above are NOT satisfied,\n\
+an InvalidArgException is raised.\n\n\
+Try again with the correct args.\n")
 
 
 class Deck:
@@ -271,15 +263,21 @@ class Deck:
     with (or without) joker cards. Do the following:
         >>> my_deck = Deck()
         >>> my_deck.get_info()
-        {'type': 'Standard 52-Card Deck', 'num_cards': 52, 'joker_count': 0}
-        >>> my_deck.draw_from_top()
-        '< Ace of Spades >'
-        >>> my_deck.draw_from_top()
-        '< Two of Spades >'
-        >>> my_deck.draw_from_top()
-        '< Three of Spades >'
+        {'deck_name': 'Standard 52-Card Deck', 'cards_remaining': 52, 'joker_count': 0}
+        >>> my_deck.draw_card_from_top()
+        '< King of Clubs >'
+        >>> my_deck.draw_card_from_top()
+        '< Queen of Clubs >'
+        >>> my_deck.draw_card_from_top()
+        '< Jack of Clubs >'
+        >>> my_deck.draw_card_from_top()
+        '< Ten of Clubs >'
         >>> # By default, the Deck is shuffled, unless you specify it as shown below:
         >>> my_unshuffled_deck = Deck(shuffle=False)
+        >>> # If you need to include jokers, do the following:
+        >>> j_deck = Deck()
+        >>> j_deck.add_joker()  # Now, there is one joker card in j_deck
+        >>> j_deck.add_joker()  # Now, there are two joker cards in j_deck
 
     2. Suppose: You want to instantiate your own custom Deck, of any number or
     combinations of Card objects. Do the following:
@@ -295,53 +293,172 @@ class Deck:
         >>> # Instantiate Deck
         >>> custom_deck = Deck('cUsToM dEcK', card_list, shuffle=False)
         >>> custom_deck.get_info()
-        {'deck_type': 'cUsToM dEcK', 'num_cards': 52, 'joker_count': 2}
-        >>> custom_deck.draw_from_top()
+        {'deck_name': 'cUsToM dEcK', 'cards_remaining': 6, 'joker_count': 2}
+        >>> custom_deck.draw_card_from_top()
         '< c0l0r j0ker >'
-        >>> custom_deck.draw_from_top()
+        >>> custom_deck.draw_card_from_top()
         '< black j0ker >'
-        >>> custom_deck.draw_from_top()
+        >>> custom_deck.draw_card_from_top()
         '< Ten of Clubs >'
-        >>> custom_deck.draw_from_top()
+        >>> custom_deck.draw_card_from_top()
         '< King of Diamonds >'
-        >>> custom_deck.draw_from_top()
+        >>> custom_deck.draw_card_from_top()
         '< Three of Hearts >'
-        >>> custom_deck.draw_from_top()
+        >>> custom_deck.draw_card_from_top()
         '< Seven of Spades >'
-        >>> custom_deck.draw_from_top()
+        >>> custom_deck.draw_card_from_top()
         None
     """
-    #TODO: Declare class/instance attributes.
+    # Private instance attributes
+    _deck_info: dict[str, Any]
+    _deck_stack: Stack[Card]
+    _cards_remaining: int
+    # Instance ID
+    __inst_id: int
+    # Total number of Deck objects instantiated thus far
+    __total_count: int=0
 
 
     def __init__(self,
-                 deck_name=STD_DECK_INFO,
-                 cust_deck=None,
+                 deck_name: str=STD_DECK_STR,
+                 cust_deck: Optional[list[Card]]=None,
                  shuffle=False) -> None:
         """
-        Refer to class docstring.
+        Deck() representations are shuffled by default.
         """
-        raise NotImplementedError
+        # Set up the Deck info
+        self._deck_info = dict()
+        self._deck_info.setdefault('deck_name', deck_name)
+        self._deck_info.setdefault('joker_count', 0)
+        self._deck_info.setdefault('cards_remaining', 52)
+        # Create the Deck Stack
+        if not cust_deck:
+            self._deck_stack = self._gen_std52_deck() #TODO: implement method
+        else:
+            self._deck_stack = self._gen_cust_deck() #TODO: implement method
+        # To shuffle or not to shuffle is not a question but a boolean.
+        if shuffle:
+            self._shuffle()  #TODO: implement method
+        # Assign instance id and update total object count.
+        self.__inst_id = self.__total_count
+        self.__total_count += 1
 
+
+    def _gen_std52_deck(self) -> Stack[Card]:
+        """
+        Generate a Stack that contains 52 unique Card objects, in order.
+
+        Representation (side view)
+        --------------------------
+        [Top of the Deck]       \n
+        '< King of Clubs >'     \n
+        '< Queen of Clubs >'    \n
+        '< Jack of Clubs >'     \n
+        '< Ten of Clubs >'      \n
+        '< Nine of Clubs >'     \n
+                      :         \n
+                      :         \n
+                      :         \n
+        '< Three of Spades >'   \n
+        '< Two of Spades >'     \n
+        '< Ace of Spades >'     \n
+        [Bottom of the Deck]    \n
+        """
+        pass
     
-    def draw_from_top(self) -> str:
+
+    def _gen_cust_deck(self) -> Stack[Card]:
+        """
+        Generate a Stack that contains an collection of Card objects, in order.
+        
+        Client Code
+        -----------
+        >>> # Create Card objects
+        >>> ss = Card(7, 's')
+        >>> th = Card(3, 'h')
+        >>> kd = Card(13, 'd')
+        >>> tc = Card(10, 'c')
+        >>> bjokr = Card(0, 'joker')
+        >>> cjokr = Card(255, 'joker')
+        >>> # Create a list of Card objects, in the order you want them stacked in the Deck
+        >>> card_list = [ss, th, kd, tc, bjokr, cjokr]  
+        >>> # Instantiate Deck
+        >>> custom_deck = Deck('cUsToM dEcK', card_list, shuffle=False)
+        >>> custom_deck.get_info()
+        {'deck_name': 'cUsToM dEcK', 'joker_count': 2, 'cards_remaining': 6}
+        >>> custom_deck.draw_card_from_top()
+        '< c0l0r j0ker >'
+        >>> custom_deck.draw_card_from_top()
+        '< black j0ker >'
+        >>> custom_deck.draw_card_from_top()
+        '< Ten of Clubs >'
+        >>> custom_deck.draw_card_from_top()
+        '< King of Diamonds >'
+        >>> custom_deck.draw_card_from_top()
+        '< Three of Hearts >'
+        >>> custom_deck.draw_card_from_top()
+        '< Seven of Spades >'
+        >>> custom_deck.draw_card_from_top()
+        None
+        """
+        pass
+
+
+    def shuffle(self) -> None:
+        """
+        Shuffle the currently-remaining cards in this Deck.
+        """
+        pass
+
+
+    def draw_card_from_top(self) -> str:
         """
         Refer to class docstring.
         """
-        raise NotImplementedError
+        pass
+
+
+    def summon_joker_at_top(self) -> None:
+        """
+        Create a new joker Card and put at the top of this Deck.
+        """
+        pass
+
+
+    def summon_joker_random_location(self) -> None:
+        """
+        Create a joker Card and insert into a random location in this Deck.
+        """
+        pass
 
 
     def get_info(self) -> dict:
         """
         Refer to the class docstring.
+        Client Code
+        -----------
+        >>> custom_deck = Deck('cUsToM dEcK', card_list, shuffle=False)
+        >>> custom_deck.get_info()
+        {'deck_type': 'cUsToM dEcK', 'num_cards': 52, 'joker_count': 2}
         """
-        raise NotImplementedError
+        pass
 
+
+    def _shuffle(self) -> None:
+        """
+        This private call/reference to self.shuffle() is an effort to limit
+        the developer practice of calling public methods from within private
+        methods, which, by extension, is an effort to minimize accidental
+        changes to the class representation invariants.
+
+        A separation of church and state must be applied between public and
+        private methods, unless there's good reason to close the gap.
+        """
+        self.shuffle()
+    
 
 class Poker():
     """
-
-
     Poker Hands
     ===========
     Find below all types of hands in Texas hold'em, starting from the highest
@@ -463,9 +580,9 @@ Pre-conditions:\n\
 4. For a color joker card:\n\
     >>> color_joker = Card(255, 'joker')\n\
 \n\
-If the pre-conditions above are NOT satisfied, this InvalidArgException \
-is raised. Try again with the correct args.\n\
-")
+If the pre-conditions above are NOT satisfied,\n\
+this InvalidArgException is raised.\n\n\
+Try again with the correct args.\n")
 
 
 if __name__ == '__main__':
