@@ -66,6 +66,22 @@ class Stack:
         >>> empty_stack = Stack()
         >>> premade_stack = Stack([1, 2, 3, 'four', 'five', [6.0, 6.1], 7])
         >>> one_element_stack = Stack('bottom element')
+        >>>
+        >>> premade_stack.pop()
+        7
+        >>> premade_stack.pop()
+        [6.0, 6.1]
+        >>> premade_stack.pop()
+        'five'
+        >>> premade_stack.pop()
+        'four'
+        >>> premade_stack.pop()
+        3
+        >>> premade_stack.pop()
+        2
+        >>> premade_stack.pop()
+        1
+        >>> premade_stack.pop()
         """
         # Initialize an empty Stack
         self._stack = []
@@ -109,14 +125,16 @@ class Stack:
         self._size += 1
     
 
-    def pop(self) -> Any:
+    def pop(self) -> Optional[None]:
         """
-        Intro
+        Info.
         -----
         Remove an item from the top of this Stack.
 
         Return
-            Any: The popped (i.e., removed) item from this Stack.
+        ------
+        None, if this Stack is already empty. Otherwise, return the
+        popped item.
 
         Client Code:
         ------------
