@@ -3,4 +3,5 @@
 PieToolz is a package containing useful classes, methods, and functions
 designed to streamline the development process.
 
-DETAILED DOCUMENTATION COMING w/ VERSION 1.0.0
+NOTE: A comprehensive documentation guide will ship w/ v1.0.0 in the
+form of this README.md file.
