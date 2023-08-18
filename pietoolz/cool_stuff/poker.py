@@ -15,23 +15,23 @@ import random as rand
 from pietoolz.data_structures.stack import Stack
 
 
-CARD_SUITS_EMJ: tuple = ('♠', '♥', '♦', '♣')
-CARD_SUITS_STR: tuple = ('Spades', 'Hearts', 'Diamonds', 'Clubs')
-CARD_RANKS: tuple = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King')
-
-STANDARD_DECK_EMJ: dict = {'♠': CARD_RANKS,
-                           '♥': CARD_RANKS,
-                           '♦': CARD_RANKS,
-                           '♣': CARD_RANKS
-                          }
-
-STANDARD_DECK_STR: dict = {'Spades': CARD_RANKS,
-                           'Hearts': CARD_RANKS,
-                           'Diamonds': CARD_RANKS,
-                           'Clubs': CARD_RANKS
-                          }
-
+SUITS_EMJ: tuple = ('♠', '♥', '♦', '♣')
+SUITS_STR: tuple = ('Spades', 'Hearts', 'Diamonds', 'Clubs')
 VALID_RANKS: tuple = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 255)
+RANKS_NO_JOKERS: tuple = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13)
+
+STANDARD_DECK_EMJ: dict = {'♠': RANKS_NO_JOKERS,
+                           '♥': RANKS_NO_JOKERS,
+                           '♦': RANKS_NO_JOKERS,
+                           '♣': RANKS_NO_JOKERS
+                          }
+
+STANDARD_DECK_STR: dict = {'Spades': RANKS_NO_JOKERS,
+                           'Hearts': RANKS_NO_JOKERS,
+                           'Diamonds': RANKS_NO_JOKERS,
+                           'Clubs': RANKS_NO_JOKERS
+                          }
+
 VALID_SUITS: tuple = ('s', 'S', 'spades', 'spade', 'Spades', 'Spade',
                       'SPADES', 'SPADE', 'spd', 'SPD',
                       'h', 'H', 'hearts', 'heart', 'Hearts', 'Heart',
@@ -79,7 +79,7 @@ class Card:
     - The same applies for a joker card and its color.
     """
     # Class Attribute:
-    __num_card_instances: int = 0
+    num_instances: int=0
 
     # Instance Attributes:
     # --------------------
@@ -90,7 +90,7 @@ class Card:
     _is_face_up: bool
     _is_joker: bool
     # Misc
-    _id: int
+    _inst_id: int
 
 
     def __init__(self, rank: int, suit: str) -> None:
@@ -122,7 +122,9 @@ class Card:
         is raised.
         """
         # Check: Invalid Args
-        if (rank not in VALID_RANKS) or (suit not in VALID_SUITS):
+        if suit not in VALID_SUITS:
+            raise InvalidArgException
+        if rank not in VALID_RANKS:
             raise InvalidArgException
         # Suit: j0ker
         if (c:=suit[0].lower()) == 'j':
@@ -150,9 +152,9 @@ class Card:
                 self._suit = 'Clubs'
         # Housekeeping
         self._is_face_up = False
-        self._id = self.__num_card_instances
-        self.__num_card_instances += 1
-
+        self._id = self.num_instances
+        self.num_instances += 1
+    
 
     def __str__(self) -> str:
         """
@@ -174,6 +176,18 @@ class Card:
         '< c0l0r j0ker >'
         """
         return self.get()
+    
+
+    def __repr__(self) -> str:
+        return self.get()
+
+
+    def get_suit(self) -> str:
+        return self._suit
+
+
+    def get_rank(self) -> str:
+        return self._rank
 
 
     def get(self) -> str:
@@ -220,16 +234,16 @@ class Card:
 
 
     @staticmethod
-    def get_some_help() -> None:
+    def help() -> None:
         """
         Print detailed instructions on how to create a Card object.
 
         How to Use
         ----------
         Uncomment the line of code below:
-        >>> # Card.get_some_help()
+        >>> # Card.help()
         """
-print("\n\
+        print("\n\
              TUTORIAL:\n\
 +----------------------------------+\n\
 | How to instantiate a Card object |\n\
@@ -250,9 +264,15 @@ Pre-conditions:\n\n\
     >>> black_joker = Card(0, 'joker')\n\n\
 4. For a color joker card:\n\
     >>> color_joker = Card(255, 'joker')\n\n\
-If the pre-conditions above are NOT satisfied,\n\
+If the pre-conditions above are NOT satisfied, \
 an InvalidArgException is raised.\n\n\
-Try again with the correct args.\n")
+Try again with the correct args.\n".replace("<BLANKLINE>", ""))
+
+
+class InvalidArgException(Exception):
+    def __init__(self) -> None:
+        super().__init__("\
+To see how to initialize a Card, run 'Card.help()'")
 
 
 class Deck:
@@ -270,23 +290,24 @@ class Deck:
 
     1. Suppose: You want to quickly instantiate a standard 52-card deck, plus
     with (or without) joker cards. Do the following:
-        >>> my_deck = Deck()
-        >>> my_deck.get_info()
-        {'deck_name': 'Standard 52-Card Deck', 'cards_remaining': 52, 'joker_count': 0}
-        >>> my_deck.draw_card_from_top()
-        '< King of Clubs >'
-        >>> my_deck.draw_card_from_top()
-        '< Queen of Clubs >'
-        >>> my_deck.draw_card_from_top()
-        '< Jack of Clubs >'
-        >>> my_deck.draw_card_from_top()
-        '< Ten of Clubs >'
-        >>> # By default, the Deck is shuffled, unless you specify it as shown below:
-        >>> my_unshuffled_deck = Deck(shuffle=False)
+        >>> deck = Deck()
+        >>> deck.get_info()
+        {'deck_name': 'Standard 52-Card Deck', 'joker_count': 0, 'cards_remaining': 52}
+        >>> deck.draw_card_from_top()
+        < King of Clubs >
+        >>> deck.draw_card_from_top()
+        < Queen of Clubs >
+        >>> deck.draw_card_from_top()
+        < Jack of Clubs >
+        >>> deck.draw_card_from_top()
+        < 10 of Clubs >
+        >>> # By default, the Deck is NOT shuffled, unless you specify it as shown below:
+        >>> unshuffled_deck = Deck(shuffle=True)
         >>> # If you need to include jokers, do the following:
         >>> j_deck = Deck()
-        >>> j_deck.add_joker()  # Now, there is one joker card in j_deck
-        >>> j_deck.add_joker()  # Now, there are two joker cards in j_deck
+        >>>
+        # >>> j_deck.summon_joker()  # Now, there is one joker card in j_deck
+        # >>> j_deck.summon_joker()  # Now, there are two joker cards in j_deck
 
     2. Suppose: You want to instantiate your own custom Deck, of any number or
     combinations of Card objects. Do the following:
@@ -302,28 +323,27 @@ class Deck:
         >>> # Instantiate Deck
         >>> custom_deck = Deck('cUsToM dEcK', card_list, shuffle=False)
         >>> custom_deck.get_info()
-        {'deck_name': 'cUsToM dEcK', 'cards_remaining': 6, 'joker_count': 2}
+        {'deck_name': 'cUsToM dEcK', 'joker_count': 2, 'cards_remaining': 6}
         >>> custom_deck.draw_card_from_top()
-        '< c0l0r j0ker >'
+        < 7 of Spades >
         >>> custom_deck.draw_card_from_top()
-        '< black j0ker >'
+        < 3 of Hearts >
         >>> custom_deck.draw_card_from_top()
-        '< Ten of Clubs >'
+        < King of Diamonds >
         >>> custom_deck.draw_card_from_top()
-        '< King of Diamonds >'
+        < 10 of Clubs >
         >>> custom_deck.draw_card_from_top()
-        '< Three of Hearts >'
+        < black j0ker >
         >>> custom_deck.draw_card_from_top()
-        '< Seven of Spades >'
+        < c0l0r j0ker >
         >>> custom_deck.draw_card_from_top()
-        None
     """
     # Private instance attributes
     _deck_info: dict[str, Any]
     _deck_stack: Stack[Card]
     _cards_remaining: int
     # Instance ID
-    __inst_id: int
+    __inst_id: int=-1
     # Total number of Deck objects instantiated thus far
     __total_count: int=0
 
@@ -339,17 +359,18 @@ class Deck:
         self._deck_info = dict()
         self._deck_info.setdefault('deck_name', deck_name)
         self._deck_info.setdefault('joker_count', 0)
-        self._deck_info.setdefault('cards_remaining', 52)
         # Create the Deck Stack
         if not cust_deck:
-            self._deck_stack = self._gen_std52_deck() #TODO: implement method
+            self._deck_info.setdefault('cards_remaining', 52)
+            self._deck_stack = self._gen_std52_deck()
         else:
-            self._deck_stack = self._gen_cust_deck() #TODO: implement method
+            self._deck_info.setdefault('cards_remaining', len(cust_deck))
+            self._deck_stack = self._gen_cust_deck(cust_deck)
         # To shuffle or not to shuffle is not a question but a boolean.
         if shuffle:
-            self._shuffle()  #TODO: implement method
+            self.shuffle()
         # Assign instance id and update total object count.
-        self.__inst_id = self.__total_count
+        self.__inst_id += 1
         self.__total_count += 1
 
 
@@ -363,20 +384,24 @@ class Deck:
         '< King of Clubs >'     \n
         '< Queen of Clubs >'    \n
         '< Jack of Clubs >'     \n
-        '< Ten of Clubs >'      \n
-        '< Nine of Clubs >'     \n
+        '< 10 of Clubs >'       \n
+        '< 9 of Clubs >'        \n
                       :         \n
                       :         \n
                       :         \n
-        '< Three of Spades >'   \n
-        '< Two of Spades >'     \n
+        '< 3 of Spades >'       \n
+        '< 2 of Spades >'       \n
         '< Ace of Spades >'     \n
         [Bottom of the Deck]    \n
         """
-        pass
-    
+        stack = Stack()
+        for suit, rank_list in STANDARD_DECK_STR.items():
+            for rank in rank_list:
+                stack.push(Card(rank, suit))
+        return stack
 
-    def _gen_cust_deck(self) -> Stack[Card]:
+
+    def _gen_cust_deck(self, cust_deck: list[Card]) -> Stack[Card]:
         """
         Generate a Stack that contains an collection of Card objects, in order.
         
@@ -396,49 +421,42 @@ class Deck:
         >>> custom_deck.get_info()
         {'deck_name': 'cUsToM dEcK', 'joker_count': 2, 'cards_remaining': 6}
         >>> custom_deck.draw_card_from_top()
-        '< c0l0r j0ker >'
+        < 7 of Spades >
         >>> custom_deck.draw_card_from_top()
-        '< black j0ker >'
+        < 3 of Hearts >
         >>> custom_deck.draw_card_from_top()
-        '< Ten of Clubs >'
+        < King of Diamonds >
         >>> custom_deck.draw_card_from_top()
-        '< King of Diamonds >'
+        < 10 of Clubs >
         >>> custom_deck.draw_card_from_top()
-        '< Three of Hearts >'
+        < black j0ker >
         >>> custom_deck.draw_card_from_top()
-        '< Seven of Spades >'
+        < c0l0r j0ker >
         >>> custom_deck.draw_card_from_top()
-        None
+        >>>
         """
-        pass
+        stack = Stack()
+        for _ in range(len(cust_deck)):
+            stack.push(card:=cust_deck.pop())
+            if card.get_suit() == 'j0ker':
+                self._deck_info['joker_count'] += 1
+        return stack
 
 
     def shuffle(self) -> None:
         """
         Shuffle the currently-remaining cards in this Deck.
         """
-        
+        self._deck_stack.shuffle()
 
 
     def draw_card_from_top(self) -> str:
         """
         Refer to class docstring.
         """
-        pass
-
-
-    def summon_joker_at_top(self) -> None:
-        """
-        Create a new joker Card and put at the top of this Deck.
-        """
-        pass
-
-
-    def summon_joker_random_location(self) -> None:
-        """
-        Create a joker Card and insert into a random location in this Deck.
-        """
-        pass
+        card = self._deck_stack.pop()
+        self.__total_count -= 1
+        return card
 
 
     def get_info(self) -> dict:
@@ -446,25 +464,34 @@ class Deck:
         Refer to the class docstring.
         Client Code
         -----------
+        >>> card_list = [Card(0, 'joker'), Card(255, 'joker')]
         >>> custom_deck = Deck('cUsToM dEcK', card_list, shuffle=False)
         >>> custom_deck.get_info()
-        {'deck_type': 'cUsToM dEcK', 'num_cards': 52, 'joker_count': 2}
+        {'deck_name': 'cUsToM dEcK', 'joker_count': 2, 'cards_remaining': 2}
         """
-        pass
+        return self._deck_info
 
 
-    def _shuffle(self) -> None:
+    def add_joker(self, random=True, black=True) -> None:
         """
-        This private call/reference to self.shuffle() is an effort to limit
-        the developer practice of calling public methods from within private
-        methods, which, by extension, is an effort to minimize accidental
-        changes to the class representation invariants.
+        By default, add a j0ker card at a random location of this Deck.
+        If <random> is set to False, then put the j0ker card at the top of
+        the Deck.
 
-        A separation of church and state must be applied between public and
-        private methods, unless there's good reason to close the gap.
+        Color of the j0ker card is, by default, <black>=True.
+        To add a colored j0ker instead of a black j0ker, set <black>=False.
         """
-        self.shuffle()
-    
+        # Which color j0ker?
+        if black:
+            joker = Card(0, 'joker')
+        else:
+            joker = Card(255, 'joker')
+        # Put where in the Deck?
+        if random:
+            raise NotImplementedError
+        else:
+            self._deck_stack.push(joker)
+
 
 class Poker():
     """
@@ -546,43 +573,7 @@ class Poker():
     pass
 
 
-class InvalidArgException(Exception):
-    def __init__(self) -> None:
-        super().__init__("\
-\n\n\
-+----------------------------------+\n\
-| How to instantiate a Card object |\n\
-+----------------------------------+\n\
-\n\
-Pre-conditions:\n\
-\n\
-1. For a standard number card:\n\
-    >>> ace_spades = Card(1, 's')\n\
-    >>> ace_spades = Card(1, 'S')\n\
-    >>> ace_spades = Card(1, 'spades')\n\
-    >>> ace_spades = Card(1, 'Spades')\n\
-    >>> ace_spades = Card(1, 'spade')\n\
-    >>> ace_spades = Card(1, 'Spade')\n\
-\n\
-2. For a standard face card:\n\
-    >>> jack_hearts = Card(11, 'h')\n\
-    >>> queen_diamonds = Card(12, 'd')\n\
-    >>> king_clubs = Card(13, 'c')\n\
-\n\
-3. For a black joker card:\n\
-    >>> black_joker = Card(0, 'joker')\n\
-\n\
-4. For a color joker card:\n\
-    >>> color_joker = Card(255, 'joker')\n\
-\n\
-If the pre-conditions above are NOT satisfied,\n\
-this InvalidArgException is raised.\n\n\
-Try again with the correct args.\n")
-
-
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
-
-    # Tests: Edge Cases
-    # print(Card(7, 'c').get_some_help())
+    
